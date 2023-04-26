@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Sharing App - Shared with you</title>
+</head>
+<body>
+    <h1>Files shared with you:</h1>
+    <ul>
+        {% for document in shared_documents %}
+            <li><a href="{% url 'download' document.id %}">{{ document.name }}</a> shared by {{ document.uploaded_by.username }}</li>
+        {% empty %}
+            <li>No files shared with you.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'upload' %}">Go back to your files</a>
+</body>
+</html>
