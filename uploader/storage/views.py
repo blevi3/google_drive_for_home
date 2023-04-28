@@ -42,19 +42,17 @@ def download(request, id):
 
 @login_required
 def share(request, id):
-    print("share")
     email = request.POST.get('email')   
     document = Document.objects.get(id=id)
-    print(document.name)
-    print(id)
     if request.method == 'POST':
-        
-        print(email)
         try:
             user = User.objects.get(email=email)
-
-            document.shared_with.add(user)
-            document.save()
+            if document.shared_with.filter(pk=user.id).exists():
+                print("már hozzá van adva")
+                return HttpResponse('This file is already shared with this user.')
+            else:
+                document.shared_with.add(user)
+                document.save()
             return HttpResponse('File shared successfully.')
         except User.DoesNotExist:
             return HttpResponse('User does not exist.')
