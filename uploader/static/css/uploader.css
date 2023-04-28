@@ -33,7 +33,6 @@ a#shared-with-you button {
     display: block;
     margin: 10px 0;
     padding: 10px 20px;
-    background-color: #fff;
     border: 1px solid #1a73e8;
     border-radius: 4px;
     box-shadow: none;
@@ -43,7 +42,6 @@ a#shared-with-you button {
 }
 form#upload-form input[type="file"] {
     margin-bottom: 0;
-    background-color: #f5f5f5;
     color: #5f6368;
 }
 form#upload-form input[type="submit"] {
@@ -61,7 +59,6 @@ ul#file-list {
 ul#file-list li {
     margin: 10px 0;
     padding: 10px;
-    background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-shadow: none;

@@ -1,49 +1,46 @@
 <!DOCTYPE html>
-<html>
+{% extends "base.html" %} {% block content %}
 <head>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="static/css/uploader.css">
-
-    <title>File Sharing App</title>
+    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script type="text/javascript">
-        $(document).ready(function(){
-            // Upload file using Ajax
-// Get the file input element and the form element
-const fileInput = document.getElementById('id_document');
-const form = document.getElementById('upload-form');
+                    $(document).ready(function(){
+                        // Upload file using Ajax
+            // Get the file input element and the form element
+            const fileInput = document.getElementById('id_document');
+            const form = document.getElementById('upload-form');
 
-// Add an event listener to the form submission event
-form.addEventListener('submit', async function(event) {
-  // Prevent the default form submission behavior
-  event.preventDefault();
+            // Add an event listener to the form submission event
+            form.addEventListener('submit', async function(event) {
+            // Prevent the default form submission behavior
+            event.preventDefault();
 
-  // Get the file object
-  const file = fileInput.files[0];
+            // Get the file object
+            const file = fileInput.files[0];
 
-  // Create a new FormData object and append the file to it
-  const formData = new FormData();
-  formData.append('document', file);
+            // Create a new FormData object and append the file to it
+            const formData = new FormData();
+            formData.append('document', file);
 
-  // Send the FormData to the server using a single fetch() request
-  const response = await fetch('{% url "upload" %}', {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val(),
-    },
-    body: formData,
-  });
+            // Send the FormData to the server using a single fetch() request
+            const response = await fetch('{% url "upload" %}', {
+                method: 'POST',
+                headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                body: formData,
+            });
 
-  // Get the response data
-  const responseData = await response.text();
+            // Get the response data
+            const responseData = await response.text();
 
-  // Update the UI to show the uploaded file(s)
-  $('#file-list').append('<li><a href="' + "/documents/"+responseData + '">' + responseData + '</a></li>');
+            // Update the UI to show the uploaded file(s)
+            $('#file-list').append('<li><a href="' + "/documents/"+responseData + '">' + responseData + '</a></li>');
 
-  // Reset the form
-  form.reset();
-  $('#file-list').reset();
-});
+            // Reset the form
+            form.reset();
+            $('#file-list').reset();
+            });
 
 
 
@@ -123,4 +120,5 @@ form.addEventListener('submit', async function(event) {
     </form>
     <a href="{% url 'shared_with_you' %}"><button>Files shared with you</button></a>
 </body>
-</html>
+
+{% endblock %}
