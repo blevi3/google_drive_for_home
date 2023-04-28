@@ -45,24 +45,20 @@ def share(request, id):
     print("share")
     email = request.POST.get('email')   
     document = Document.objects.get(id=id)
+    print(document.name)
     print(id)
     if request.method == 'POST':
         
         print(email)
         try:
             user = User.objects.get(email=email)
-            new_document = Document.objects.create(
-                name=document.name,
-                document=document.document,
-                uploaded_by=document.uploaded_by,
-                )
-            new_document.shared_with.add(user)
-            new_document.save()
+
+            document.shared_with.add(user)
+            document.save()
             return HttpResponse('File shared successfully.')
         except User.DoesNotExist:
             return HttpResponse('User does not exist.')
-    return render(request, 'upload.html', {'document': document})
-
+    return HttpResponse('Nothing changed.')
 
 def shared_with_you(request):
     shared_documents = Document.objects.filter(shared_with=request.user)

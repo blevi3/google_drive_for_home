@@ -48,18 +48,20 @@ form.addEventListener('submit', async function(event) {
 
 
 
-            var selectElement = document.getElementById("share_select");
-            var selectedValue = selectElement.options[selectElement.selectedIndex].value;
-            console.log(selectedValue)
-            var shareId = parseInt(selectedValue);
-            console.log(email);
-            var formData = new FormData();
             
-            formData.append('share_id', shareId);
             
 
             // Share file using Ajax
             $('#share-form').on('submit', function(event){
+                var selectElement = document.getElementById("share_select");
+                var selectedValue = selectElement.options[selectElement.selectedIndex].value;
+                console.log(selectedValue)
+                var shareId = parseInt(selectedValue);
+                console.log(email);
+                console.log(shareId);
+                var formData = new FormData();
+            
+                formData.append('share_id', shareId);
                 var email = document.getElementById("email").value;
                 formData.append('email', email);
                 event.preventDefault();
