@@ -1,9 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Document
 from .forms import DocumentForm
 from django.http import HttpResponse
 from django.contrib.auth.models import User
+from django.http.response import HttpResponseRedirect
+from django.http import HttpResponseBadRequest, HttpResponseServerError
+import os
+from uploader import settings
+
+
 
 
 @login_required
@@ -22,6 +28,7 @@ def upload(request):
             print(document.name)
             doc={
                 document.name,
+                
             }
             return HttpResponse(doc)
    
@@ -87,3 +94,19 @@ def upload_chunk(request):
 
     # Return a JSON response indicating success
     return JsonResponse({'status': 'success'})
+
+
+def handler404(request, *args, **kwargs):
+    return HttpResponseRedirect('/')
+
+def delete_object(request, id):
+    obj = get_object_or_404(Document, id=id)
+    filename = obj.name
+    obj.delete()
+    # Delete the file
+    try:
+        os.remove(os.path.join(settings.BASE_DIR, 'documents', filename))
+    except OSError:
+        pass
+    # Return a JSON response indicating success
+    return JsonResponse({'status': 'success', 'message': 'Object deleted successfully.'})

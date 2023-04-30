@@ -1,86 +1,115 @@
 <!DOCTYPE html>
 {% extends "base.html" %} {% block content %}
 <head>
-    
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/js/functions.css">
+
     <script type="text/javascript">
-                    $(document).ready(function(){
-                        // Upload file using Ajax
+        $(document).ready(function () {
+            // Upload file using Ajax
             // Get the file input element and the form element
-            const fileInput = document.getElementById('id_document');
-            const form = document.getElementById('upload-form');
-
+            const fileInput = document.getElementById("id_document");
+            const form = document.getElementById("upload-form");
+          
             // Add an event listener to the form submission event
-            form.addEventListener('submit', async function(event) {
-            // Prevent the default form submission behavior
-            event.preventDefault();
-
-            // Get the file object
-            const file = fileInput.files[0];
-
-            // Create a new FormData object and append the file to it
-            const formData = new FormData();
-            formData.append('document', file);
-
-            // Send the FormData to the server using a single fetch() request
-            const response = await fetch('{% url "upload" %}', {
-                method: 'POST',
+            form.addEventListener("submit", async function (event) {
+              // Prevent the default form submission behavior
+              event.preventDefault();
+          
+              // Get the file object
+              const file = fileInput.files[0];
+          
+              // Create a new FormData object and append the file to it
+              const formData = new FormData();
+              formData.append("document", file);
+          
+              // Send the FormData to the server using a single fetch() request
+              const response = await fetch('{% url "upload" %}', {
+                method: "POST",
                 headers: {
-                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val(),
+                  "X-CSRFToken": $('input[name="csrfmiddlewaretoken"]').val(),
                 },
                 body: formData,
+              });
+          
+              // Get the response data
+              const responseData = await response.text();
+          
+              // Update the UI to show the uploaded file(s)
+              $("#file-list").append(
+                '<li><a href="' +
+                  "/documents/" +
+                  responseData +
+                  '">' +
+                  responseData +
+                  "</a></li>"
+              );
+          
+              // Reset the form
+              form.reset();
+              $("#file-list").reset();
             });
-
-            // Get the response data
-            const responseData = await response.text();
-
-            // Update the UI to show the uploaded file(s)
-            $('#file-list').append('<li><a href="' + "/documents/"+responseData + '">' + responseData + '</a></li>');
-
-            // Reset the form
-            form.reset();
-            $('#file-list').reset();
-            });
-
-
-
-
-            
-            
-
+          
             // Share file using Ajax
-            $('#share-form').on('submit', function(event){
-                var selectElement = document.getElementById("share_select");
-                var selectedValue = selectElement.options[selectElement.selectedIndex].value;
-                console.log(selectedValue)
-                var shareId = parseInt(selectedValue);
-                console.log(email);
-                console.log(shareId);
-                var formData = new FormData();
-            
-                formData.append('share_id', shareId);
-                var email = document.getElementById("email").value;
-                formData.append('email', email);
+            $("#share-form").on("submit", function (event) {
+              var selectElement = document.getElementById("share_select");
+              var selectedValue =
+                selectElement.options[selectElement.selectedIndex].value;
+              console.log(selectedValue);
+              var shareId = parseInt(selectedValue);
+              console.log(email);
+              console.log(shareId);
+              var formData = new FormData();
+          
+              formData.append("share_id", shareId);
+              var email = document.getElementById("email").value;
+              formData.append("email", email);
+              event.preventDefault();
+              $.ajax({
+                url: "/share/" + shareId + "/",
+                type: "POST",
+                headers: {
+                  "X-CSRFToken": $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (response) {
+                  alert(response);
+                  $("#share-form")[0].reset();
+                },
+                error: function (error) {
+                  console.log(error);
+                },
+              });
+            });
+
+
+            $('.delete-btn').click(function() {
                 event.preventDefault();
+                var id = $(this).data('id');
+                var button = $(this);
+
                 $.ajax({
-                    url: '/share/' + shareId+'/',
+                    url: '/remove/' + id + '/',
                     type: 'POST',
-                    headers: {
-                        'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                    data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                    
+                    success: function(data) {
+                        if (data.status == 'success') {
+                        alert(data.message);
+                        // remove the table row containing the deleted object
+                        button.closest('li').remove();
+                        } else {
+                        alert(data.message);
+                        }
                     },
-                    processData: false,
-                    contentType: false,
-                    data: formData,
-                    success: function(response){
-                        alert(response);
-                        $('#share-form')[0].reset();
-                    },
-                    error: function(error){
-                        console.log(error);
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("An error occurred while deleting the object.");
                     }
                 });
-            });
-        });
+              });
+          });
+                
     </script>
 </head>
 <body>
@@ -97,7 +126,11 @@
     <ul id="file-list">
         <h2>File List</h2>
         {% for document in documents %}
-            <li><a href="{% url 'download' document.id %}">{{ document.name }}</a></li>
+            <li><a href="{% url 'download' document.id %}">{{ document.name }}</a>
+                <a href="{% url 'remove' document.id %}"><button data-id="{{ document.id }}" class = "btn-danger delete-btn">Remove</button></a>
+            
+            </li>
+
         {% empty %}
             <li>No files available.</li>
         {% endfor %}
