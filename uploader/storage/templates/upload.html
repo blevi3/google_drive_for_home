@@ -2,6 +2,8 @@
 {% extends "base.html" %} {% block content %}
 <head>
     <link rel="stylesheet" type="text/css" href="/static/js/functions.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/uploader.css">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -41,9 +43,10 @@
                   responseData +
                   '">' +
                   responseData +
-                  "</a></li>"
+                  "</a> </li>"
               );
           
+              
               // Reset the form
               form.reset();
               $("#file-list").reset();
@@ -113,45 +116,51 @@
     </script>
 </head>
 <body>
-    <h1>File Sharing App</h1>
-    <div class="container">
-    
-    <form id="upload-form" method="post" enctype="multipart/form-data">
-        <h2>Upload File</h2>
-        {% csrf_token %}
-        <input type="file" name="file" id="id_document">
-        <input type="submit" value="Upload">
-    </form>
-    
-    <ul id="file-list">
+  <h1>File Sharing App</h1>
+  <div class="container">
+      <form id="upload-form" method="post" enctype="multipart/form-data">
+          <h2>Upload File</h2>
+          {% csrf_token %}
+          <input type="file" name="file" id="id_document">
+          <input type="submit" value="Upload">
+      </form>
+
+      <ul id="file-list">
         <h2>File List</h2>
         {% for document in documents %}
-            <li><a href="{% url 'download' document.id %}">{{ document.name }}</a>
-                <a href="{% url 'remove' document.id %}"><button data-id="{{ document.id }}" class = "btn-danger delete-btn">Remove</button></a>
-            
-            </li>
-
+          <li>
+            <a href="{% url 'download' document.id %}">{{ document.name }}</a>
+            <a href="{% url 'remove' document.id %}"><button data-id="{{ document.id }}" class="btn-danger delete-btn">Remove</button></a>
+          </li>
         {% empty %}
-            <li>No files available.</li>
+          <li>No files available.</li>
         {% endfor %}
-    </ul>
-</div>
-    <h2>Share File</h2>
-    <form id="share-form" method="post">
-        {% csrf_token %}
-        <label for="file">Select file to share:</label>
-        <select name="file" id = "share_select">
-            {% for document in documents %}
-                <option value="{{ document.id }}">{{ document.document }}</option>
-            {% endfor %}
-        </select>
-        <br>
-        <label for="recipient">Recipient email:</label>
-        <input id ="email" type="email" name="recipient">
-        <br>
-        <input type="submit" value="Share">
-    </form>
-    <a href="{% url 'shared_with_you' %}"><button>Files shared with you</button></a>
+      </ul>
+  </div>
+  
+  <div class="container">
+      <h2>Share File</h2>
+      <form id="share-form" method="post">
+          {% csrf_token %}
+          <div class="form-group">
+              <label for="file">Select file to share:</label>
+              <select name="file" id="share_select" class="form-control">
+                  {% for document in documents %}
+                  <option value="{{ document.id }}">{{ document.name }}</option>
+                  {% endfor %}
+              </select>
+          </div>
+          <div class="form-group">
+              <label for="recipient">Recipient email:</label>
+              <input id="email" type="email" name="recipient" class="form-control">
+          </div>
+          <div class="form-group">
+              <input type="submit" value="Share" class="btn btn-primary">
+          </div>
+      </form>
+      <a href="{% url 'shared_with_you' %}" class="btn btn-secondary">Files shared with you</a>
+  </div>
 </body>
+
 
 {% endblock %}
