@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 {% extends "base.html" %} {% block content %}
 <head>
-    <link rel="stylesheet" type="text/css" href="/static/js/functions.css">
     <link rel="stylesheet" type="text/css" href="/static/css/uploader.css">
     <meta content="width=device-width, initial-scale=1" name="viewport" />
 
@@ -115,6 +114,8 @@
                 
     </script>
 </head>
+
+
 <body>
   <h1>File Sharing App</h1>
   <div class="container">
@@ -136,9 +137,7 @@
           <li>No files available.</li>
         {% endfor %}
       </ul>
-  </div>
-  
-  <div class="container">
+      <br>
       <h2>Share File</h2>
       <form id="share-form" method="post">
           {% csrf_token %}

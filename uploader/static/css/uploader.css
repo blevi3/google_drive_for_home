@@ -1,46 +1,48 @@
 
-
+html, body {
+    height: 100%;
+    width: 100%;
+  }
 .container {
-    max-width: 600px;
     margin: 0 auto;
-    padding: 20px;
-  }
-  
-  h1, h2 {
+}
+
+h1,
+h2 {
     text-align: center;
-  }
-  
-  ul {
+}
+
+ul {
     list-style: none;
     margin: 0;
     padding: 0;
-  }
-  
-  li {
+}
+
+li {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px;
     border-bottom: 1px solid #ccc;
-  }
-  
-  li a {
+}
+
+li a {
     text-decoration: none;
     color: #333;
-  }
-  
-  .form-group {
+}
+
+.form-group {
     margin-bottom: 15px;
-  }
-  
-  .form-control {
+}
+
+.form-control {
     width: 100%;
-    
+
     border: 1px solid #ccc;
     border-radius: 4px;
-  }
-  
-  .btn {
+}
+
+.btn {
     display: inline-block;
     padding: 10px 20px;
     border: none;
@@ -49,43 +51,46 @@
     text-decoration: none;
     font-size: 16px;
     cursor: pointer;
-  }
-  
-  .btn-primary {
+}
+
+.btn-primary {
     background-color: #007bff;
-  }
-  
-  .btn-secondary {
+}
+
+.btn-secondary {
     background-color: #6c757d;
-  }
-  
-  .btn-danger {
+}
+
+.btn-danger {
     background-color: #dc3545;
-  }
-  
-  #file-list {
+}
+
+#file-list {
     max-height: 400px;
     overflow-y: auto;
-  }
+}
 
-  @media only screen and (max-width: 600px) {
+@media only screen and (max-width: 600px) {
     body {
-      font-size: 18px;
+        font-size: 18px;
+        width: fit-content;
+
     }
 
-    
+
     .container {
-      margin: 10px;
-      padding: 10px;
-      font-size: 16px;
+        width: 100%;
+        margin: 10px;
+        padding: 10px;
+        font-size: 16px;
     }
-  
+
     #file-list {
-      max-height: 200px;
-      font-size: 14px;
+        max-height: 200px;
+        font-size: 14px;
     }
-  
+
     a {
-      font-size: 18px;
+        font-size: 18px;
     }
-  }
+}
