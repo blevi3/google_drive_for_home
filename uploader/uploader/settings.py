@@ -28,7 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = ["192.168.100.7", '127.0.0.1']
 
 
-LOGIN_REDIRECT_URL = "/"
+
+LOGIN_REDIRECT_URL = "/home"
 LOGOUT_REDIRECT_URL = "/accounts/login"
 
 # Application definition
@@ -40,9 +41,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'storage',
 
+
+
 ]
+
+TWO_FACTOR_AUTHENTICATION_TEMPLATE = 'custom_two_factor_auth.html'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -52,6 +59,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 ROOT_URLCONF = 'uploader.urls'

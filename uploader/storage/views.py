@@ -22,15 +22,15 @@ def upload(request):
             document.name = request.FILES['document'].name
             document.uploaded_by = request.user
             document.save()
-            print(document.document)
             document.name = document.document.name[10:]
             document.save()
-            print(document.name)
             doc={
-                document.name,
-                
+                'filename': document.name,
+                'id': document.id,
             }
-            return HttpResponse(doc)
+            print(doc)
+            return JsonResponse(doc)
+
    
     else:
         form = DocumentForm()
@@ -110,3 +110,6 @@ def delete_object(request, id):
         pass
     # Return a JSON response indicating success
     return JsonResponse({'status': 'success', 'message': 'Object deleted successfully.'})
+
+
+

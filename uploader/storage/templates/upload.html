@@ -5,51 +5,64 @@
     <meta content="width=device-width, initial-scale=1" name="viewport" />
 
     <script type="text/javascript">
-        $(document).ready(function () {
-            // Upload file using Ajax
-            // Get the file input element and the form element
-            const fileInput = document.getElementById("id_document");
-            const form = document.getElementById("upload-form");
-          
-            // Add an event listener to the form submission event
-            form.addEventListener("submit", async function (event) {
-              // Prevent the default form submission behavior
-              event.preventDefault();
-          
-              // Get the file object
-              const file = fileInput.files[0];
-          
-              // Create a new FormData object and append the file to it
-              const formData = new FormData();
-              formData.append("document", file);
-          
-              // Send the FormData to the server using a single fetch() request
-              const response = await fetch('{% url "upload" %}', {
-                method: "POST",
-                headers: {
-                  "X-CSRFToken": $('input[name="csrfmiddlewaretoken"]').val(),
-                },
-                body: formData,
-              });
-          
-              // Get the response data
-              const responseData = await response.text();
-          
-              // Update the UI to show the uploaded file(s)
-              $("#file-list").append(
-                '<li><a href="' +
-                  "/documents/" +
-                  responseData +
-                  '">' +
-                  responseData +
-                  "</a> </li>"
-              );
-          
-              
-              // Reset the form
-              form.reset();
-              $("#file-list").reset();
-            });
+  $(document).ready(function () {
+  // Upload file using Ajax
+  // Get the file input element and the form element
+  const fileInput = document.getElementById("id_document");
+  const form = document.getElementById("upload-form");
+
+  // Add an event listener to the form submission event
+  form.addEventListener("submit", async function (event) {
+    // Prevent the default form submission behavior
+    event.preventDefault();
+
+    // Get the file object
+    const file = fileInput.files[0];
+
+    // Create a new FormData object and append the file to it
+    const formData = new FormData();
+    formData.append("document", file);
+
+    // Send the FormData to the server using XMLHttpRequest and track upload progress
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", '{% url "upload" %}');
+    xhr.upload.addEventListener("progress", function (event) {
+      const progressBar = document.getElementById("progress-bar");
+      if (event.lengthComputable) {
+        const percentComplete = (event.loaded / event.total) * 100;
+        progressBar.value = percentComplete;
+      }
+    });
+    xhr.setRequestHeader("X-CSRFToken", $('input[name="csrfmiddlewaretoken"]').val());
+    xhr.send(formData);
+
+
+    xhr.addEventListener("readystatechange", function(event) {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        const responseData = xhr.responseText;
+        const data = JSON.parse(responseData); // Parse the response data as JSON
+        
+
+        // Update the UI to show the uploaded file(s)
+        $("#file-list").append(
+          '<li><a href="/documents/' + data.filename + '">' + data.filename + 
+            '</a> <button class="btn btn-danger"><a href="/remove/' + data.id + '">' + "Remove" + 
+              '</a></button></li>'
+        );
+        
+        
+
+        // Reset the form and progress bar
+        form.reset();
+    
+    document.getElementById("progress-bar").value = 0;
+      }
+    });
+
+
+  });
+
+
           
             // Share file using Ajax
             $("#share-form").on("submit", function (event) {
@@ -97,7 +110,7 @@
                     data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
                     
                     success: function(data) {
-                        if (data.status == 'success') {
+                        if (data.status == "success") {
                         alert(data.message);
                         // remove the table row containing the deleted object
                         button.closest('li').remove();
@@ -125,13 +138,15 @@
           <input type="file" name="file" id="id_document">
           <input type="submit" value="Upload">
       </form>
+      <progress id="progress-bar" value="0" max="100"></progress>
+
 
       <ul id="file-list">
         <h2>File List</h2>
         {% for document in documents %}
           <li>
             <a href="{% url 'download' document.id %}">{{ document.name }}</a>
-            <a href="{% url 'remove' document.id %}"><button data-id="{{ document.id }}" class="btn-danger delete-btn">Remove</button></a>
+            <a href="{% url 'remove' document.id %}"><button data-id="{{ document.id }}" class="btn btn-danger delete-btn">Remove</button></a>
           </li>
         {% empty %}
           <li>No files available.</li>
