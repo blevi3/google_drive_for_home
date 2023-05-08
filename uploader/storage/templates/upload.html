@@ -4,7 +4,7 @@
     <link rel="stylesheet" type="text/css" href="/static/css/uploader.css">
     <meta content="width=device-width, initial-scale=1" name="viewport" />
 
-    <script type="text/javascript">
+<script type="text/javascript">
   $(document).ready(function () {
   // Upload file using Ajax
   // Get the file input element and the form element
@@ -15,7 +15,8 @@
   form.addEventListener("submit", async function (event) {
     // Prevent the default form submission behavior
     event.preventDefault();
-
+    const progbar = document.getElementById("progress-bar");
+    progbar.style.visibility='visible';
     // Get the file object
     const file = fileInput.files[0];
 
@@ -56,6 +57,7 @@
         form.reset();
     
     document.getElementById("progress-bar").value = 0;
+    progbar.style.visibility='hidden'
       }
     });
 
@@ -125,7 +127,7 @@
               });
           });
                 
-    </script>
+</script>
 </head>
 
 
@@ -138,7 +140,7 @@
           <input type="file" name="file" id="id_document">
           <input type="submit" value="Upload">
       </form>
-      <progress id="progress-bar" value="0" max="100"></progress>
+      <progress  id="progress-bar" value="0" max="100"></progress>
 
 
       <ul id="file-list">

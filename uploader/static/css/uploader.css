@@ -26,6 +26,10 @@ li {
     border-bottom: 1px solid #ccc;
 }
 
+#progress-bar{
+    visibility: hidden;
+}
+
 li a {
     text-decoration: none;
     color: #333;
@@ -86,7 +90,7 @@ li a {
     }
 
     #file-list {
-        max-height: 200px;
+        max-height: 400px;
         font-size: 14px;
     }
 

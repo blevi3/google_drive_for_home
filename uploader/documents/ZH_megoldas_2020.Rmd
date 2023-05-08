@@ -1,0 +1,100 @@
+---
+title: "Adatbányászati technikák ZH"
+author: ""
+date: '2020 05 23 '
+Neptun: ""
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(data.table)
+library(h2o)
+```
+
+
+```{r }
+h2o.init()
+h2o.removeAll()
+```
+
+```{r }
+predict_and_write = function(h2o_model,name,test){
+    fileName = paste("submit_", name, ".csv", sep = "")
+    if (file.exists(fileName)){
+            file.remove(fileName)
+        }
+    h2o_pred = as.vector(h2o.predict(h2o_model, h2o_test)$p1)
+    h2o_sol = cbind(as.vector(h2o_test$article_id), as.vector(h2o_pred))
+    colnames(h2o_sol) = c("article_id", "score")
+    write.csv(h2o_sol, fileName, row.names = FALSE)
+}
+```
+
+```{r }
+h2o_data = h2o.importFile(path = "C:/ml2020bme/train.csv/train.csv")
+h2o_test = h2o.importFile(path = "C:/ml2020bme/test.csv/test.csv")
+h2o_data$is_popular = h2o.asfactor(h2o_data$is_popular)
+split_data = h2o.splitFrame(h2o_data, ratios = 0.75, seed = 253)
+h2o_train = split_data[[1]]
+h2o_valid = split_data[[2]]
+```
+
+```{r }
+glm_model = h2o.glm(family = "binomial", y = "is_popular", training_frame = h2o_train, validation_frame = h2o_valid, nfolds = 10, seed = 253, keep_cross_validation_predictions = TRUE)
+predict_and_write(glm_model,"glm_model",h2o_test)
+print(h2o.auc(h2o.performance(glm_model, valid = TRUE)))
+```
+
+```{r }
+h2o_forest_model = h2o.randomForest(y = "is_popular", training_frame = h2o_train, validation_frame = h2o_valid, nfolds = 10, seed = 253, keep_cross_validation_predictions = TRUE)
+predict_and_write(h2o_forest_model,"h2o_forest_model",h2o_test)
+print(h2o.auc(h2o.performance(h2o_forest_model, valid = TRUE)))
+```
+
+```{r }
+gbm_model = h2o.gbm(y = "is_popular", training_frame = h2o_train, validation_frame = h2o_valid, nfolds = 10, seed = 253,keep_cross_validation_predictions = TRUE)
+predict_and_write(gbm_model,"gbm_model",h2o_test)
+print(h2o.auc(h2o.performance(gbm_model, valid = TRUE)))
+```
+
+```{r }
+nn_model = h2o.deeplearning(y = "is_popular", training_frame = h2o_train, validation_frame = h2o_valid , nfolds = 10, hidden = c(200,200), epochs = 5, seed = 253, keep_cross_validation_predictions = TRUE)
+predict_and_write(nn_model,"nn_model",h2o_test)
+print(h2o.auc(h2o.performance(nn_model, valid = TRUE)))
+```
+
+A hiperparaméter keresést egy Gradient Boosting modellre végeztem el mivel az előzetes modellépítés során ennek lett kimagasolóa legngyobb az AUC értéke így ehhez kerestem méginkább megfelelő paramétereket. Első körben egy grid search-ös keresést végeztem, learn rate, sample rate, és max depth paraméterekkel mely nem adott jobb eredményt mint az eredeti GBM
+
+```{r }
+gbm_params = list(learn_rate = c(0.01, 0.1, 1), sample_rate = c(0.7, 0.85, 1), max_depth = c(10, 12, 14))
+gbm_grid = h2o.grid(algorithm = "gbm", grid_id = "gbm_grid", y = "is_popular", training_frame = h2o_train, validation_frame = h2o_valid, hyper_params = gbm_params)
+gbm_grid_perf = h2o.getGrid(grid_id = "gbm_grid", sort_by = "auc", decreasing = TRUE)
+best_gbm_model = h2o.getModel(gbm_grid_perf@model_ids[[1]])
+predict_and_write(best_gbm_model,"best_gbm_model",h2o_test)
+print(h2o.auc(h2o.performance(best_gbm_model, valid = TRUE)))
+```
+Ezután egy random discrete keresést próbáltam meg egy plusz ntrees paraméterrel. Ez már kiadta az eredeti GBM AUC értékét de jobb paraméterezést nem talált
+```{r }
+gbm_params = list(learn_rate = c(0.01, 0.1, 1), sample_rate = c(0.7, 0.85, 1),max_depth = c(6,8,10, 12), ntrees = c(2,8,15))
+search_criteria = list(strategy = "RandomDiscrete", max_models = 100)
+random_gbm_grid = h2o.grid(algorithm = "gbm", grid_id = "random_gbm_grid", y = "is_popular", training_frame = h2o_train, validation_frame = h2o_valid, hyper_params = gbm_params, search_criteria = search_criteria)
+random_gbm_grid_perf = h2o.getGrid(grid_id = "random_gbm_grid", sort_by = "auc", decreasing = TRUE)
+best_random_gbm_model = h2o.getModel(random_gbm_grid_perf@model_ids[[1]])
+predict_and_write(best_random_gbm_model,"best_random_gbm_model",h2o_test)
+print(h2o.auc(h2o.performance(best_random_gbm_model, valid = TRUE)))
+```
+Megpróbálkoztam egy stacking modellel is mely az alap random forest, neurális háló és GBM-ből készült. Végül ez adta a legjobb megoldást
+```{r }
+stacking_model = h2o.stackedEnsemble(y = "is_popular", training_frame = h2o_train, validation_frame = h2o_valid, metalearner_nfolds = 10, base_models = c(h2o_forest_model, gbm_model, nn_model), seed = 253)
+predict_and_write(stacking_model,"stacking_model",h2o_test)
+print(h2o.auc(h2o.performance(stacking_model, valid = TRUE)))
+```
+A kaggle-on talákható legjobb ereményt egy 3600 sec-es automata kereséssel értem el az h2o.automl eszközzel de végső verzióba nem tettem bele mert sose lett volna kész a KNIT-elés
+
+auto_model = h2o.automl(y = "is_popular",training_frame = h2o_train, validation_frame = h2o_valid, max_runtime_secs = 3600)
+predict_and_write(auto_model@leader,"auto",h2o_test)
