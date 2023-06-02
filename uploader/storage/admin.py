@@ -1,5 +1,5 @@
 from django.contrib import admin
-from storage.models import Document
+from storage.models import Document, OTP
 
 
 # Register your models here.
@@ -7,3 +7,6 @@ from storage.models import Document
 class DocumentAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(OTP)
+class OTPAdmin(admin.ModelAdmin):
+    pass

@@ -32,6 +32,7 @@
       if (event.lengthComputable) {
         const percentComplete = (event.loaded / event.total) * 100;
         progressBar.value = percentComplete;
+        document.getElementById("percentage").text=percentComplete;
       }
     });
     xhr.setRequestHeader("X-CSRFToken", $('input[name="csrfmiddlewaretoken"]').val());
@@ -55,7 +56,7 @@
 
         // Reset the form and progress bar
         form.reset();
-    
+        
     document.getElementById("progress-bar").value = 0;
     progbar.style.visibility='hidden'
       }
@@ -141,7 +142,7 @@
           <input type="submit" value="Upload">
       </form>
       <progress  id="progress-bar" value="0" max="100"></progress>
-
+      <p id = "percentage"></p>
 
       <ul id="file-list">
         <h2>File List</h2>

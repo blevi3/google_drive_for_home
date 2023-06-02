@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Document
-from .forms import DocumentForm
+from .forms import DocumentForm, OTPForm
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.http.response import HttpResponseRedirect
@@ -113,3 +113,63 @@ def delete_object(request, id):
 
 
 
+from django.contrib.auth import authenticate, login
+from .models import OTP
+from django.core.mail import send_mail
+
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            otp = OTP(user=user, code=OTP.generate_otp())
+            otp.save()
+            send_mail(
+                'Your OTP code',
+                'Your OTP code is {}'.format(otp.code),
+                settings.EMAIL_HOST_USER,
+                [user.email],
+                fail_silently=False,
+            )
+            return redirect('enter_otp', user_id=user.id)
+        else:
+            # invalid login
+            pass
+    else:
+        form = OTPForm()
+    return render(request, 'registration/login.html', {'form': form})
+
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth import login as auth_login
+from .models import OTP
+from django.contrib.auth import logout
+
+
+
+
+def enter_otp_view(request, user_id):
+    User = get_user_model()
+    user = User.objects.get(id=user_id)
+    if request.method == 'POST':
+        form = OTPForm(request.POST)
+        if form.is_valid():
+            print("valid")
+            otp_code = form.cleaned_data['code']
+            otp = OTP.objects.filter(user=user).first()
+            print(otp_code)
+            print(otp.code)
+            if str(otp.code) == str(otp_code):
+                print("validrfads")
+                auth_login(request, user)
+                otp.delete()
+                return redirect('upload')  # replace with the name of your homepage view
+    else:
+        form = OTPForm()
+    return render(request, 'enter_otp.html', {'form': form, 'user_id': user.id})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login') 
