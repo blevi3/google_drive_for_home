@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["192.168.100.7", '127.0.0.1']
 
 
-
+LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = "/home"
 LOGOUT_REDIRECT_URL = "/login"
 
