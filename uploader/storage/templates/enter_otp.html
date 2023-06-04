@@ -1,14 +1,32 @@
-
-
-
 {% extends "base.html" %} 
 {% block title %}Enter OTP{% endblock %}
 
 {% block content %}
 <h2>Enter OTP</h2>
-<form method="post">
+<form id="otp-form" method="post">
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit">Submit</button>
+  <button type="button" id="resend-otp">Resend OTP</button>
 </form>
+
+<div id="resend-message"></div>
+
+<script>
+  $(document).ready(function() {
+    $("#resend-otp").click(function() {
+      var userId = "{{ user_id }}";
+      $.ajax({
+        type: "GET",
+        url: "/resend-otp/" + userId,
+        success: function(response) {
+          $("#resend-message").text(response.message);
+        },
+        error: function(xhr, status, error) {
+          console.log(xhr.responseText);
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}

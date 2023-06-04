@@ -124,6 +124,7 @@ def login_view(request):
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            OTP.objects.filter(user=user).delete()
             otp = OTP(user=user, code=OTP.generate_otp())
             otp.save()
             send_mail(
@@ -133,6 +134,7 @@ def login_view(request):
                 [user.email],
                 fail_silently=False,
             )
+
             return redirect('enter_otp', user_id=user.id)
         else:
             # invalid login
@@ -148,15 +150,13 @@ from .models import OTP
 from django.contrib.auth import logout
 
 
-
-
 def enter_otp_view(request, user_id):
     User = get_user_model()
     user = User.objects.get(id=user_id)
+
     if request.method == 'POST':
         form = OTPForm(request.POST)
         if form.is_valid():
-            print("valid")
             otp_code = form.cleaned_data['code']
             otp = OTP.objects.filter(user=user).first()
             print(otp_code)
@@ -169,6 +169,29 @@ def enter_otp_view(request, user_id):
     else:
         form = OTPForm()
     return render(request, 'enter_otp.html', {'form': form, 'user_id': user.id})
+
+
+from django.core.mail import send_mail
+
+def resend_otp(request, user_id):
+    User = get_user_model()
+    user = User.objects.get(id=user_id)
+    otp = OTP.objects.filter(user=user).last()
+    if otp:
+        otp.code = OTP.generate_otp()
+        otp.save()
+        # Send the OTP code via email
+        send_mail(
+            'OTP Resend',
+            f'Your new OTP is: {otp.code}',
+            'sender@example.com',
+            [user.email],
+            fail_silently=False,
+        )
+        return JsonResponse({'message': 'OTP resent successfully'})
+    return JsonResponse({'message': 'OTP not found'})
+
+
 
 def logout_view(request):
     logout(request)
