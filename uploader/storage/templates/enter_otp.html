@@ -1,6 +1,7 @@
 {% extends "base.html" %} 
 {% block title %}Enter OTP{% endblock %}
 
+
 {% block content %}
 <h2>Enter OTP</h2>
 <form id="otp-form" method="post">
@@ -20,7 +21,7 @@
         type: "GET",
         url: "/resend-otp/" + userId,
         success: function(response) {
-          $("#resend-message").text(response.message);
+          $("#resend-message").text("OTP code resent");
         },
         error: function(xhr, status, error) {
           console.log(xhr.responseText);
@@ -29,4 +30,5 @@
     });
   });
 </script>
+
 {% endblock %}
