@@ -2,6 +2,7 @@ from django.urls import path, include
 from . import views
 from django.views.generic.base import TemplateView
 urlpatterns = [
+    path('', views.upload, name='upload'),
     path('home', views.upload, name='upload'),
     path('download/<int:id>/', views.download, name='download'),
     path('share/<int:id>/', views.share, name='share'),

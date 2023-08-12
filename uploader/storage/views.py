@@ -161,7 +161,7 @@ def enter_otp_view(request, user_id):
             otp = OTP.objects.filter(user=user).first()
             print(otp_code)
             print(otp.code)
-            if str(otp.code) == str(otp_code):
+            if str(otp.code).lower() == str(otp_code).lower():
                 print("validrfads")
                 auth_login(request, user)
                 otp.delete()
