@@ -138,7 +138,7 @@ def login_view(request):
             return redirect('enter_otp', user_id=user.id)
         else:
             # invalid login
-            pass
+            form = ""
     else:
         form = OTPForm()
     return render(request, 'registration/login.html', {'form': form})
