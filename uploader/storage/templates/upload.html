@@ -5,144 +5,126 @@
     <meta content="width=device-width, initial-scale=1" name="viewport" />
 
 <script type="text/javascript">
-  $(document).ready(function () {
-  // Upload file using Ajax
-  // Get the file input element and the form element
-  const fileInput = document.getElementById("id_document");
-  const form = document.getElementById("upload-form");
+  $(document).ready(function() {
+    const fileInput = document.getElementById("id_document");
+    const form = document.getElementById("upload-form");
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+        const progbar = document.getElementById("progress-bar");
+        progbar.style.visibility = 'visible';
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append("document", file);
 
-  // Add an event listener to the form submission event
-  form.addEventListener("submit", async function (event) {
-    // Prevent the default form submission behavior
-    event.preventDefault();
-    const progbar = document.getElementById("progress-bar");
-    progbar.style.visibility='visible';
-    // Get the file object
-    const file = fileInput.files[0];
-
-    // Create a new FormData object and append the file to it
-    const formData = new FormData();
-    formData.append("document", file);
-
-    // Send the FormData to the server using XMLHttpRequest and track upload progress
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", '{% url "upload" %}');
-    xhr.upload.addEventListener("progress", function (event) {
-      const progressBar = document.getElementById("progress-bar");
-      if (event.lengthComputable) {
-        const percentComplete = (event.loaded / event.total) * 100;
-        progressBar.value = percentComplete;
-        document.getElementById("percentage").text=percentComplete;
-      }
-    });
-    xhr.setRequestHeader("X-CSRFToken", $('input[name="csrfmiddlewaretoken"]').val());
-    xhr.send(formData);
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", '{% url "upload" %}');
+        xhr.upload.addEventListener("progress", function(event) {
+            const progressBar = document.getElementById("progress-bar");
+            if (event.lengthComputable) {
+                const percentComplete = (event.loaded / event.total) * 100;
+                progressBar.value = percentComplete;
+                document.getElementById("percentage").text = percentComplete;
+            }
+        });
+        xhr.setRequestHeader("X-CSRFToken", $('input[name="csrfmiddlewaretoken"]').val());
+        xhr.send(formData);
 
 
-    xhr.addEventListener("readystatechange", function(event) {
-      if (xhr.readyState === XMLHttpRequest.DONE) {
-        const responseData = xhr.responseText;
-        const data = JSON.parse(responseData); // Parse the response data as JSON
-        
+        xhr.addEventListener("readystatechange", function(event) {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                const responseData = xhr.responseText;
+                const data = JSON.parse(responseData); 
+                $("#file-list").append(
+                    '<li><a href="/documents/' + data.filename + '">' + data.filename +
+                    '</a> <button class="btn btn-danger"><a href="/remove/' + data.id + '">' + "Remove" +
+                    '</a></button></li>'
+                );
 
-        // Update the UI to show the uploaded file(s)
-        $("#file-list").append(
-          '<li><a href="/documents/' + data.filename + '">' + data.filename + 
-            '</a> <button class="btn btn-danger"><a href="/remove/' + data.id + '">' + "Remove" + 
-              '</a></button></li>'
-        );
-        
-        
-
-        // Reset the form and progress bar
-        form.reset();
-        
-    document.getElementById("progress-bar").value = 0;
-    progbar.style.visibility='hidden'
-      }
+                form.reset();
+                document.getElementById("progress-bar").value = 0;
+                progbar.style.visibility = 'hidden'
+            }
+        });
     });
 
+    $("#share-form").on("submit", function(event) {
+        var selectElement = document.getElementById("share_select");
+        var selectedValue =
+            selectElement.options[selectElement.selectedIndex].value;
+        console.log(selectedValue);
+        var shareId = parseInt(selectedValue);
+        console.log(email);
+        console.log(shareId);
+        var formData = new FormData();
 
-  });
-
-
-          
-            // Share file using Ajax
-            $("#share-form").on("submit", function (event) {
-              var selectElement = document.getElementById("share_select");
-              var selectedValue =
-                selectElement.options[selectElement.selectedIndex].value;
-              console.log(selectedValue);
-              var shareId = parseInt(selectedValue);
-              console.log(email);
-              console.log(shareId);
-              var formData = new FormData();
-          
-              formData.append("share_id", shareId);
-              var email = document.getElementById("email").value;
-              formData.append("email", email);
-              event.preventDefault();
-              $.ajax({
-                url: "/share/" + shareId + "/",
-                type: "POST",
-                headers: {
-                  "X-CSRFToken": $('input[name="csrfmiddlewaretoken"]').val(),
-                },
-                processData: false,
-                contentType: false,
-                data: formData,
-                success: function (response) {
-                  alert(response);
-                  $("#share-form")[0].reset();
-                },
-                error: function (error) {
-                  console.log(error);
-                },
-              });
-            });
+        formData.append("share_id", shareId);
+        var email = document.getElementById("email").value;
+        formData.append("email", email);
+        event.preventDefault();
+        $.ajax({
+            url: "/share/" + shareId + "/",
+            type: "POST",
+            headers: {
+                "X-CSRFToken": $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            processData: false,
+            contentType: false,
+            data: formData,
+            success: function(response) {
+                alert(response);
+                $("#share-form")[0].reset();
+            },
+            error: function(error) {
+                console.log(error);
+            },
+        });
+    });
 
 
-            $('.delete-btn').click(function() {
-                event.preventDefault();
-                var id = $(this).data('id');
-                var button = $(this);
+    $('.delete-btn').click(function() {
+        event.preventDefault();
+        var id = $(this).data('id');
+        var button = $(this);
 
-                $.ajax({
-                    url: '/remove/' + id + '/',
-                    type: 'POST',
-                    data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                    
-                    success: function(data) {
-                        if (data.status == "success") {
-                        alert(data.message);
-                        // remove the table row containing the deleted object
-                        button.closest('li').remove();
-                        } else {
-                        alert(data.message);
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert("An error occurred while deleting the object.");
-                    }
-                });
-              });
-          });
-                
+        $.ajax({
+            url: '/remove/' + id + '/',
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+
+            success: function(data) {
+                if (data.status == "success") {
+                    alert(data.message);
+                    button.closest('li').remove();
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("An error occurred while deleting the object.");
+            }
+        });
+    });
+});
 </script>
 </head>
 
 
-<body>
   <h1>File Sharing App</h1>
   <div class="container">
+    <div class = "formDiv">
       <form id="upload-form" method="post" enctype="multipart/form-data">
           <h2>Upload File</h2>
           {% csrf_token %}
-          <input type="file" name="file" id="id_document">
-          <input type="submit" value="Upload">
-      </form>
+          <input type="file" name="file" id="id_document"></div>
+          <div class="center-button">
+            <input type="submit" value="Upload" class="upload-button">
+          </div>     
+        </form>
       <progress  id="progress-bar" value="0" max="100"></progress>
       <p id = "percentage"></p>
+
 
       <ul id="file-list">
         <h2>File List</h2>
